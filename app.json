@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "SAGARD",
+    "slug": "sagard-mobile",
+    "version": "1.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo-sagard.png",
+    "scheme": "sagard",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sagard.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SAGARD utilise la caméra pour les photos de pointage et la lecture de QR codes lors des rondes de sécurité.",
+        "NSLocationWhenInUseUsageDescription": "SAGARD utilise votre position pour valider votre pointage sur site et enregistrer les scans de rondes."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo-sagard-transparant.png",
+        "backgroundColor": "#0f172a"
+      },
+      "package": "com.sagard.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-camera",
+      "expo-location",
+      "expo-notifications",
+      "expo-router",
+      "expo-image-picker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      },
+      "router": {
+        "origin": "https://sagard-mobile"
+      }
+    }
+  }
+}
