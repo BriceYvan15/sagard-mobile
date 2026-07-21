@@ -1,0 +1,43 @@
+name: CI Mobile
+
+# L'app mobile n'est pas "déployée sur le VPS" : elle tourne via Expo.
+# Cette CI vérifie que le code compile (typecheck) à chaque PR/merge → on ne casse
+# pas l'app de l'autre développeur. La publication (OTA / stores) via EAS est en option ci-dessous.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Typecheck (tsc)
+        run: npx tsc --noEmit
+
+  # --- OPTIONNEL : publication OTA (mise à jour sans repasser par les stores) ---
+  # Prérequis : exécuter une fois `eas init` (remplit extra.eas.projectId dans app.json),
+  # créer un token Expo (expo.dev → Account → Access tokens) et l'ajouter en secret EXPO_TOKEN.
+  # ota-update:
+  #   if: github.ref == 'refs/heads/main'
+  #   needs: typecheck
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #     - run: npm install --legacy-peer-deps --no-audit --no-fund
+  #     - uses: expo/expo-github-action@v8
+  #       with:
+  #         eas-version: latest
+  #         token: ${{ secrets.EXPO_TOKEN }}
+  #     - run: eas update --branch production --message "${{ github.event.head_commit.message }}"
