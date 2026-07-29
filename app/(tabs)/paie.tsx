@@ -5,6 +5,12 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useAuth } from '../../lib/auth-context'
 import { getPayrolls, getPayslip } from '../../services/hr.service'
 
+function fmtHours(hours: number): string {
+  const h = Math.floor(hours)
+  const min = Math.round((hours - h) * 60)
+  return min > 0 ? `${h}h ${String(min).padStart(2, '0')}min` : `${h}h`
+}
+
 export default function PaieScreen() {
   const { user, agentId } = useAuth()
   const [payrolls, setPayrolls] = useState<any[]>([])
@@ -96,10 +102,10 @@ export default function PaieScreen() {
                     </Text>
                     <View className="flex-row items-center gap-1.5 mt-1">
                       <View className={`w-2 h-2 rounded-full ${
-                        p.status === 'PAYE' ? 'bg-green-500' : p.status === 'VALIDE' ? 'bg-blue-500' : 'bg-slate-300'
+                        myLine.paymentStatus === 'PAYE' ? 'bg-green-500' : myLine.paymentStatus === 'VALIDE' ? 'bg-blue-500' : 'bg-slate-300'
                       }`} />
                       <Text className="text-slate-400 text-xs font-bold uppercase tracking-tighter">
-                        {p.status === 'PAYE' ? 'Payé' : p.status === 'VALIDE' ? 'Validé' : 'Brouillon'}
+                        {myLine.paymentStatus === 'PAYE' ? 'Payé' : myLine.paymentStatus === 'VALIDE' ? 'Validé' : 'Brouillon'}
                         {myLine.blocked ? ' · Bloqué' : ''}
                       </Text>
                     </View>
@@ -177,7 +183,7 @@ export default function PaieScreen() {
                       <View className="flex-row items-center gap-2">
                         <Clock size={14} color="#64748b" />
                         <Text className="text-slate-600 font-bold text-xs">
-                          {payslip.daysWorked}j · {payslip.hoursWorked}h
+                          {payslip.daysWorked}j · {fmtHours(payslip.hoursWorked)}
                         </Text>
                       </View>
                     </View>

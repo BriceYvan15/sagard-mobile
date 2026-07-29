@@ -33,7 +33,17 @@ export async function updatePosition(pointageId: string, data: {
   return res
 }
 
-export async function getTodayPointages(params?: { siteId?: string; shift?: string }) {
+export async function startBreak(pointageId: string) {
+  const { data: res } = await api.post(`/pointages/${pointageId}/break-start`)
+  return res
+}
+
+export async function endBreak(pointageId: string) {
+  const { data: res } = await api.post(`/pointages/${pointageId}/break-end`)
+  return res
+}
+
+export async function getTodayPointages(params?: { siteId?: string; shift?: string; agentId?: string }) {
   const { data } = await api.get('/pointages/today', { params })
   return data
 }

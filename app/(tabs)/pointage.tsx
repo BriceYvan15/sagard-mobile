@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, StyleSheet } from 'react-native'
 import * as Location from 'expo-location'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Clock, MapPin, LogIn, LogOut, CheckCircle } from 'lucide-react-native'
+import { Clock, MapPin, LogIn, LogOut, CheckCircle, Coffee, PlayCircle } from 'lucide-react-native'
 import LottieView from 'lottie-react-native'
 import { useAuth } from '../../lib/auth-context'
-import { checkIn, checkOut, getTodayPointages, updatePosition } from '../../services/pointage.service'
+import { checkIn, checkOut, getTodayPointages, updatePosition, startBreak, endBreak } from '../../services/pointage.service'
 import { getMyDeployments } from '../../services/pointage.service'
 
 const GEOFENCE_RADIUS = 100 // mètres
@@ -90,11 +90,14 @@ export default function PointageScreen() {
   const [siteCoords, setSiteCoords] = useState<{ lat: number; lng: number; name: string } | null>(null)
   const [distanceToSite, setDistanceToSite] = useState<number | null>(null)
   const [lastPositionUpdate, setLastPositionUpdate] = useState<Date | null>(null)
+  const [elapsedTime, setElapsedTime] = useState<string>('00:00:00')
+  const [breakLoading, setBreakLoading] = useState(false)
   const positionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadToday = async () => {
     try {
-      const data = await getTodayPointages()
+      const data = await getTodayPointages(agentId ? { agentId } : undefined)
       setTodayPointages(data)
       const active = data.find((p: any) => p.status === 'EN_COURS' || p.status === 'RETARD')
       setActivePointage(active ?? null)
@@ -104,6 +107,37 @@ export default function PointageScreen() {
       setLoading(false)
     }
   }
+
+  // Live work timer
+  useEffect(() => {
+    if (activePointage?.checkInTime) {
+      const updateTimer = () => {
+        const start = new Date(activePointage.checkInTime).getTime()
+        const breakMs = (activePointage.breakMinutes || 0) * 60000
+        const now = Date.now()
+        let elapsed = now - start - breakMs
+        if (activePointage.onBreak && activePointage.breakStart) {
+          elapsed -= (now - new Date(activePointage.breakStart).getTime())
+        }
+        if (elapsed < 0) elapsed = 0
+        const h = Math.floor(elapsed / 3600000)
+        const m = Math.floor((elapsed % 3600000) / 60000)
+        const s = Math.floor((elapsed % 60000) / 1000)
+        setElapsedTime(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`)
+      }
+      updateTimer()
+      timerRef.current = setInterval(updateTimer, 1000)
+    } else {
+      setElapsedTime('00:00:00')
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [activePointage])
 
   useEffect(() => {
     loadToday()
@@ -217,6 +251,27 @@ export default function PointageScreen() {
     }
   }
 
+  const handleBreak = async () => {
+    if (!activePointage) return
+    setBreakLoading(true)
+    try {
+      if (activePointage.onBreak) {
+        await endBreak(activePointage.id)
+        Alert.alert('Succès', 'Pause terminée, reprise du poste')
+      } else {
+        await startBreak(activePointage.id)
+        Alert.alert('Succès', 'Pause démarrée')
+      }
+      await loadToday()
+    } catch (e: any) {
+      const rawMsg = e.response?.data?.message ?? e?.message ?? 'Erreur lors de la pause'
+      const errMsg = Array.isArray(rawMsg) ? rawMsg.join(', ') : rawMsg
+      Alert.alert('Erreur', errMsg)
+    } finally {
+      setBreakLoading(false)
+    }
+  }
+
   return (
     <ScrollView className="flex-1 bg-slate-50">
       <LinearGradient
@@ -277,6 +332,44 @@ export default function PointageScreen() {
                 </Text>
                 <Text className="text-green-700 font-bold mb-1 text-sm uppercase tracking-widest ml-1">Vacation</Text>
               </View>
+
+              {/* Live work timer */}
+              <View style={{ marginTop: 16, alignItems: 'center' }}>
+                <Text style={{ fontSize: 11, color: '#15803d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+                  {activePointage.onBreak ? 'En pause' : 'Temps de travail'}
+                </Text>
+                <Text style={{ fontSize: 36, fontWeight: '900', color: activePointage.onBreak ? '#d97706' : '#166534', fontVariant: ['tabular-nums'] }}>
+                  {elapsedTime}
+                </Text>
+              </View>
+
+              {/* Pause button */}
+              <TouchableOpacity
+                onPress={handleBreak}
+                disabled={breakLoading}
+                activeOpacity={0.8}
+                style={{
+                  marginTop: 16,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  paddingVertical: 14, borderRadius: 14,
+                  backgroundColor: activePointage.onBreak ? '#16a34a' : '#f59e0b',
+                }}
+              >
+                {breakLoading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <>
+                    {activePointage.onBreak ? (
+                      <PlayCircle size={20} color="white" strokeWidth={2.5} />
+                    ) : (
+                      <Coffee size={20} color="white" strokeWidth={2.5} />
+                    )}
+                    <Text style={{ color: 'white', fontWeight: '900', fontSize: 15 }}>
+                      {activePointage.onBreak ? 'Reprendre le poste' : 'Prendre une pause'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
 
               {lastPositionUpdate && (
                 <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
