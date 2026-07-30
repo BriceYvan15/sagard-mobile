@@ -22,6 +22,12 @@ export async function getLeaves(params?: { agentId?: string; status?: string }) 
   return data
 }
 
+// Statistiques de travail (heures réelles vs attendues)
+export async function getWorkStats(agentId: string, params?: { month?: number; year?: number }) {
+  const { data } = await api.get(`/hr/agents/${agentId}/work-stats`, { params })
+  return data
+}
+
 export async function requestLeave(data: {
   agentId: string
   type: string
