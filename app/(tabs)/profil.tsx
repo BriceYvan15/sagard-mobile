@@ -13,6 +13,8 @@ const ROLE_LABELS: Record<string, string> = {
   CHEF_POSTE: 'Chef de Poste',
   AGENT_ACCUEIL: 'Agent Accueil',
   DIRECTEUR_GENERAL: 'Directeur Général',
+  CLIENT: 'Client',
+  TECHNICIEN: 'Technicien',
 }
 
 export default function ProfilScreen() {

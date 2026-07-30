@@ -10,6 +10,8 @@ interface AuthContextType {
   role: string | null
   isAgent: boolean
   isController: boolean
+  isClient: boolean
+  isTechnician: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -22,6 +24,8 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   isAgent: false,
   isController: false,
+  isClient: false,
+  isTechnician: false,
   login: async () => {},
   logout: async () => {},
 })
@@ -82,9 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role = user?.role ?? null
   const isAgent = role === 'AGENT_TERRAIN' || role === 'CHEF_POSTE' || role === 'AGENT_ACCUEIL'
   const isController = role === 'CONTROLEUR' || role === 'CHEF_OPERATIONS'
+  const isClient = role === 'CLIENT'
+  const isTechnician = role === 'TECHNICIEN'
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, agentId, role, isAgent, isController, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, agentId, role, isAgent, isController, isClient, isTechnician, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
