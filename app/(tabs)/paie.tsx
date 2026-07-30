@@ -80,89 +80,246 @@ export default function PaieScreen() {
         </View>
       </LinearGradient>
 
-      {/* ── Work Tracking Card ── */}
+      {/* ── Work Tracking Card (Redesigned) ── */}
       <View className="px-6 -mt-8 mb-6">
         {workStatsLoading ? (
           <View className="bg-white rounded-[28px] p-8 items-center shadow-xl shadow-slate-200 border border-slate-100">
             <ActivityIndicator color="#f5b800" />
-            <Text className="text-slate-400 font-medium mt-3">Chargement...</Text>
+            <Text className="text-slate-400 font-medium mt-3">Chargement de votre suivi...</Text>
           </View>
         ) : workStats ? (
-          <LinearGradient
-            colors={['#1e293b', '#0f172a']}
-            className="rounded-[28px] p-6 shadow-xl shadow-slate-900/20"
-          >
-            <View className="flex-row items-center justify-between mb-5">
-              <View className="flex-row items-center gap-2">
-                <View className="w-9 h-9 bg-sagard-yellow/20 rounded-xl items-center justify-center">
-                  <Zap size={18} color="#f5b800" />
+          <View className="space-y-4">
+
+            {/* ── Main earnings card ── */}
+            <LinearGradient
+              colors={['#0f172a', '#1e293b']}
+              className="rounded-[28px] p-6 shadow-xl shadow-slate-900/20"
+            >
+              {/* Header */}
+              <View className="flex-row items-center justify-between mb-5">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-10 h-10 bg-sagard-yellow/20 rounded-xl items-center justify-center">
+                    <Zap size={20} color="#f5b800" />
+                  </View>
+                  <View>
+                    <Text className="text-white font-black text-base">Mon suivi</Text>
+                    <Text className="text-slate-400 text-xs">{workStats.shift} · {workStats.hoursPerDay}h/jour</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text className="text-white font-black text-base">Suivi temps réel</Text>
-                  <Text className="text-slate-400 text-xs">{workStats.shift} · {workStats.hoursPerDay}h/jour</Text>
+                <View className="bg-white/10 rounded-lg px-3 py-1">
+                  <Text className="text-sagard-yellow font-bold text-xs">{String(workStats.month).padStart(2, '0')}/{workStats.year}</Text>
                 </View>
               </View>
-              <View className="bg-white/10 rounded-lg px-3 py-1">
-                <Text className="text-sagard-yellow font-bold text-xs">{String(workStats.month).padStart(2, '0')}/{workStats.year}</Text>
+
+              {/* Net earnings - big display */}
+              <View className="bg-sagard-yellow/10 rounded-2xl p-5 border border-sagard-yellow/20 mb-4">
+                <Text className="text-sagard-yellow/70 text-[10px] font-black uppercase tracking-[3px] mb-1">Gains nets estimés</Text>
+                <Text className="text-sagard-yellow font-black text-4xl">{fmt(workStats.netEarnings)}<Text className="text-lg font-bold"> F</Text></Text>
+                <View className="flex-row items-center gap-2 mt-2">
+                  <Text className="text-sagard-yellow/50 text-[10px]">{workStats.daysWorked} vacations × {workStats.vacationRate} F</Text>
+                  {workStats.extraServicesCount > 0 && (
+                    <Text className="text-emerald-400/70 text-[10px] font-bold">+{workStats.extraServicesCount} service(s) extra</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Progress bar */}
+              <View className="mb-4">
+                <View className="flex-row justify-between items-center mb-1.5">
+                  <Text className="text-slate-400 text-xs font-medium">Taux de présence</Text>
+                  <Text className={`font-black text-sm ${workStats.attendanceRate >= 80 ? 'text-green-400' : workStats.attendanceRate >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{workStats.attendanceRate}%</Text>
+                </View>
+                <View className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+                  <View
+                    className={`h-full rounded-full ${workStats.attendanceRate >= 80 ? 'bg-green-500' : workStats.attendanceRate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                    style={{ width: `${Math.min(workStats.attendanceRate, 100)}%` }}
+                  />
+                </View>
+              </View>
+
+              {/* Time stats grid */}
+              <View className="flex-row gap-3">
+                <View className="flex-1 bg-white/5 rounded-2xl p-3 border border-white/5">
+                  <View className="flex-row items-center gap-1.5 mb-1">
+                    <Clock size={11} color="#94a3b8" />
+                    <Text className="text-slate-400 text-[10px] font-bold uppercase">Heures</Text>
+                  </View>
+                  <Text className="text-white font-black text-lg">{fmtHours(workStats.hoursWorked)}</Text>
+                  <Text className="text-slate-500 text-[10px]">/ {fmtHours(workStats.expectedHours)}</Text>
+                </View>
+                <View className="flex-1 bg-white/5 rounded-2xl p-3 border border-white/5">
+                  <View className="flex-row items-center gap-1.5 mb-1">
+                    <Calendar size={11} color="#94a3b8" />
+                    <Text className="text-slate-400 text-[10px] font-bold uppercase">Jours</Text>
+                  </View>
+                  <Text className="text-white font-black text-lg">{workStats.daysWorked}<Text className="text-slate-500 text-sm">/{workStats.expectedDays}</Text></Text>
+                  <Text className="text-slate-500 text-[10px]">sur {workStats.daysInMonth}j</Text>
+                </View>
+                <View className="flex-1 bg-white/5 rounded-2xl p-3 border border-white/5">
+                  <View className="flex-row items-center gap-1.5 mb-1">
+                    <TrendingUp size={11} color="#94a3b8" />
+                    <Text className="text-slate-400 text-[10px] font-bold uppercase">H. supp</Text>
+                  </View>
+                  <Text className="text-emerald-400 font-black text-lg">{fmtHours(workStats.overtimeHours)}</Text>
+                </View>
+              </View>
+            </LinearGradient>
+
+            {/* ── Earnings breakdown card ── */}
+            <View className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
+              <Text className="text-slate-800 font-black text-sm mb-4">Décompte des gains</Text>
+
+              {/* Gross */}
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-7 h-7 bg-green-50 rounded-lg items-center justify-center">
+                    <DollarSign size={14} color="#16a34a" />
+                  </View>
+                  <Text className="text-slate-600 text-sm font-medium">Gains bruts</Text>
+                </View>
+                <Text className="text-green-600 font-bold text-sm">+{fmt(workStats.grossEarnings)} F</Text>
+              </View>
+
+              {/* Extra services */}
+              {workStats.extraServicesEarnings > 0 && (
+                <View className="flex-row justify-between items-center py-2">
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-7 h-7 bg-emerald-50 rounded-lg items-center justify-center">
+                      <Zap size={14} color="#059669" />
+                    </View>
+                    <Text className="text-slate-600 text-sm font-medium">Services extra</Text>
+                  </View>
+                  <Text className="text-emerald-600 font-bold text-sm">+{fmt(workStats.extraServicesEarnings)} F</Text>
+                </View>
+              )}
+
+              {/* Late deduction */}
+              {workStats.lateDeduction > 0 && (
+                <View className="flex-row justify-between items-center py-2">
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-7 h-7 bg-amber-50 rounded-lg items-center justify-center">
+                      <Clock size={14} color="#d97706" />
+                    </View>
+                    <View>
+                      <Text className="text-slate-600 text-sm font-medium">Pénalité retards</Text>
+                      <Text className="text-amber-500 text-[10px]">{workStats.lateCount} retard(s) · {workStats.lateHours}h · {workStats.latePenaltyPerHour} F/h</Text>
+                    </View>
+                  </View>
+                  <Text className="text-amber-600 font-bold text-sm">-{fmt(workStats.lateDeduction)} F</Text>
+                </View>
+              )}
+
+              {/* Missing days deduction */}
+              {workStats.missingDays > 0 && (
+                <View className="flex-row justify-between items-center py-2">
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-7 h-7 bg-red-50 rounded-lg items-center justify-center">
+                      <AlertCircle size={14} color="#dc2626" />
+                    </View>
+                    <View>
+                      <Text className="text-slate-600 text-sm font-medium">Jours manqués</Text>
+                      <Text className="text-red-400 text-[10px]">{workStats.missingDays}j · {fmtHours(workStats.missingHours)} manquantes</Text>
+                    </View>
+                  </View>
+                  <Text className="text-red-500 font-bold text-sm">-{fmt(workStats.missingDaysDeduction)} F</Text>
+                </View>
+              )}
+
+              {/* Net total */}
+              <View className="mt-2 pt-3 border-t border-slate-100">
+                <View className="flex-row justify-between items-center bg-slate-50 rounded-xl px-4 py-3">
+                  <Text className="text-slate-800 font-black text-sm">Net estimé</Text>
+                  <Text className="text-sagard-yellow-dark font-black text-lg">{fmt(workStats.netEarnings)} F</Text>
+                </View>
               </View>
             </View>
 
-            {/* Main stats grid */}
-            <View className="flex-row gap-3 mb-4">
-              <View className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/5">
-                <View className="flex-row items-center gap-1.5 mb-1">
-                  <Clock size={12} color="#94a3b8" />
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Heures</Text>
+            {/* ── Rattrapage card ── */}
+            {workStats.rattrapageEligible && (
+              <View className="bg-blue-50 rounded-[24px] p-5 border border-blue-100">
+                <View className="flex-row items-center gap-3 mb-3">
+                  <View className="w-10 h-10 bg-blue-100 rounded-xl items-center justify-center">
+                    <Target size={20} color="#2563eb" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-blue-900 font-black text-sm">Rattrapage possible</Text>
+                    <Text className="text-blue-500 text-xs">Vous avez {fmtHours(workStats.rattrapageHoursNeeded)} à rattraper</Text>
+                  </View>
                 </View>
-                <Text className="text-white font-black text-xl">{fmtHours(workStats.hoursWorked)}</Text>
-                <Text className="text-slate-500 text-[10px] mt-0.5">Objectif: {fmtHours(workStats.expectedHours)}</Text>
+                <Text className="text-blue-600 text-xs leading-4 mb-3">
+                  Effectuez des heures supplémentaires pour compenser les heures manquées et réduire l'impact sur votre salaire.
+                </Text>
+                <TouchableOpacity
+                  className="bg-blue-600 rounded-xl py-3 items-center"
+                  activeOpacity={0.8}
+                >
+                  <Text className="text-white font-bold text-sm">Demander un rattrapage</Text>
+                </TouchableOpacity>
               </View>
-              <View className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/5">
-                <View className="flex-row items-center gap-1.5 mb-1">
-                  <Calendar size={12} color="#94a3b8" />
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Jours</Text>
-                </View>
-                <Text className="text-white font-black text-xl">{workStats.daysWorked}<Text className="text-slate-500 text-sm font-normal">/{workStats.expectedDays}</Text></Text>
-                <Text className="text-slate-500 text-[10px] mt-0.5">Sur {workStats.daysInMonth}j</Text>
-              </View>
-            </View>
+            )}
 
-            {/* Progress bar */}
-            <View className="mb-4">
-              <View className="flex-row justify-between items-center mb-1.5">
-                <Text className="text-slate-400 text-xs font-medium">Taux de présence</Text>
-                <Text className={`font-black text-sm ${workStats.attendanceRate >= 80 ? 'text-green-400' : workStats.attendanceRate >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{workStats.attendanceRate}%</Text>
+            {/* ── Extra services card ── */}
+            {workStats.extraServices && workStats.extraServices.length > 0 && (
+              <View className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
+                <View className="flex-row items-center gap-2 mb-3">
+                  <View className="w-8 h-8 bg-emerald-50 rounded-lg items-center justify-center">
+                    <Zap size={16} color="#059669" />
+                  </View>
+                  <Text className="text-slate-800 font-black text-sm">Services extra</Text>
+                </View>
+                <View className="space-y-2">
+                  {workStats.extraServices.map((svc: any, i: number) => (
+                    <View key={svc.id ?? i} className="flex-row justify-between items-center bg-slate-50 rounded-xl px-4 py-3">
+                      <View className="flex-1">
+                        <Text className="text-slate-700 font-bold text-xs">{svc.description ?? 'Service extra'}</Text>
+                        <Text className="text-slate-400 text-[10px] mt-0.5">
+                          {new Date(svc.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} · {svc.hours}h
+                          {svc.assignedByName ? ` · ${svc.assignedByName}` : ''}
+                        </Text>
+                      </View>
+                      <View className="items-end">
+                        <Text className="text-emerald-600 font-bold text-sm">+{fmt(svc.amount)} F</Text>
+                        <Text className={`text-[9px] font-bold uppercase ${svc.status === 'VALIDEE' ? 'text-green-500' : svc.status === 'ANNULEE' ? 'text-red-400' : 'text-amber-500'}`}>
+                          {svc.status === 'VALIDEE' ? 'Validé' : svc.status === 'ANNULEE' ? 'Annulé' : 'En attente'}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
               </View>
-              <View className="h-2.5 bg-white/10 rounded-full overflow-hidden">
-                <View
-                  className={`h-full rounded-full ${workStats.attendanceRate >= 80 ? 'bg-green-500' : workStats.attendanceRate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                  style={{ width: `${Math.min(workStats.attendanceRate, 100)}%` }}
-                />
-              </View>
-            </View>
+            )}
 
-            {/* Earnings + extra */}
-            <View className="flex-row gap-3">
-              <View className="flex-1 bg-sagard-yellow/10 rounded-2xl p-4 border border-sagard-yellow/20">
-                <View className="flex-row items-center gap-1.5 mb-1">
-                  <DollarSign size={12} color="#f5b800" />
-                  <Text className="text-sagard-yellow text-[10px] font-bold uppercase tracking-wider">Gains estimés</Text>
+            {/* ── Info card: how it works ── */}
+            <View className="bg-slate-50 rounded-[24px] p-5 border border-slate-100">
+              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-wider mb-3">Comment ça marche</Text>
+              <View className="space-y-2.5">
+                <View className="flex-row items-start gap-2">
+                  <View className="w-5 h-5 bg-sagard-yellow/20 rounded-md items-center justify-center mt-0.5">
+                    <Text className="text-sagard-yellow-dark text-[10px] font-black">1</Text>
+                  </View>
+                  <Text className="text-slate-500 text-xs flex-1 leading-4">1 vacation = {workStats.hoursPerDay}h = {workStats.vacationRate} F</Text>
                 </View>
-                <Text className="text-sagard-yellow font-black text-2xl">{fmt(workStats.estimatedEarnings)}<Text className="text-sm font-normal"> F</Text></Text>
-                <Text className="text-sagard-yellow/50 text-[10px] mt-0.5">{workStats.daysWorked} vacations × 2500 F</Text>
-              </View>
-              <View className="bg-white/5 rounded-2xl p-4 border border-white/5 justify-center">
-                <View className="flex-row items-center gap-1.5 mb-1">
-                  <TrendingUp size={12} color="#94a3b8" />
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Heures supp.</Text>
+                <View className="flex-row items-start gap-2">
+                  <View className="w-5 h-5 bg-amber-100 rounded-md items-center justify-center mt-0.5">
+                    <Text className="text-amber-600 text-[10px] font-black">2</Text>
+                  </View>
+                  <Text className="text-slate-500 text-xs flex-1 leading-4">Retard = {workStats.latePenaltyPerHour} F par heure de retard</Text>
                 </View>
-                <Text className="text-emerald-400 font-black text-base">{fmtHours(workStats.overtimeHours)}</Text>
-                {workStats.lateCount > 0 && (
-                  <Text className="text-amber-400 text-[10px] mt-1">{workStats.lateCount} retard(s) · {workStats.totalLateMinutes}min</Text>
-                )}
+                <View className="flex-row items-start gap-2">
+                  <View className="w-5 h-5 bg-blue-100 rounded-md items-center justify-center mt-0.5">
+                    <Text className="text-blue-600 text-[10px] font-black">3</Text>
+                  </View>
+                  <Text className="text-slate-500 text-xs flex-1 leading-4">Rattrapage possible pour les heures manquées</Text>
+                </View>
+                <View className="flex-row items-start gap-2">
+                  <View className="w-5 h-5 bg-emerald-100 rounded-md items-center justify-center mt-0.5">
+                    <Text className="text-emerald-600 text-[10px] font-black">4</Text>
+                  </View>
+                  <Text className="text-slate-500 text-xs flex-1 leading-4">Services extra assignés par le chef des opérations</Text>
+                </View>
               </View>
             </View>
-          </LinearGradient>
+          </View>
         ) : null}
       </View>
 
