@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, TextInput } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Wrench, MapPin, Calendar, ChevronRight, X, Play, CheckCircle, Clock, Building2, Camera } from 'lucide-react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import { getMyInterventions, startIntervention, completeIntervention } from '../../services/intervention.service'
@@ -108,10 +109,24 @@ export default function InterventionsScreen() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-slate-50" refreshControl={<RefreshControl refreshing={false} onRefresh={loadInterventions} />}>
-        <View className="px-4 pt-6 pb-3">
-          <Text className="text-2xl font-bold text-slate-800">Interventions</Text>
-          <Text className="text-slate-500 mt-1">Installations caméras & vidéosurveillance</Text>
+      <ScrollView className="flex-1 bg-slate-50" refreshControl={<RefreshControl refreshing={false} onRefresh={loadInterventions} tintColor="#f5b800" />}>
+        <LinearGradient
+          colors={['#0f172a', '#1e293b']}
+          className="pt-16 pb-12 px-6 rounded-b-[40px] shadow-2xl"
+        >
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-slate-400 text-sm font-medium uppercase tracking-widest">Technique</Text>
+              <Text className="text-white font-black text-3xl mt-1">Interventions</Text>
+            </View>
+            <View className="w-14 h-14 bg-white/10 rounded-2xl items-center justify-center border border-white/5">
+              <Wrench size={24} color="#f5b800" />
+            </View>
+          </View>
+        </LinearGradient>
+
+        <View className="px-4 -mt-6 pb-3">
+          <Text className="text-slate-500 text-sm">Installations caméras & vidéosurveillance</Text>
         </View>
 
         {/* Filter pills */}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Building2, MapPin, Users, CircleCheck, Circle, Phone, ChevronDown, ChevronUp } from 'lucide-react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import { getMySites } from '../../services/client.service'
@@ -38,10 +39,24 @@ export default function MesSitesScreen() {
   if (sites.length === 0) return <EmptyView message="Aucun site assigné pour le moment" />
 
   return (
-    <ScrollView className="flex-1 bg-slate-50" refreshControl={<RefreshControl refreshing={false} onRefresh={loadSites} />}>
-      <View className="px-4 pt-6 pb-4">
-        <Text className="text-2xl font-bold text-slate-800">Mes Sites</Text>
-        <Text className="text-slate-500 mt-1">Agents assignés et statut en poste</Text>
+    <ScrollView className="flex-1 bg-slate-50" refreshControl={<RefreshControl refreshing={false} onRefresh={loadSites} tintColor="#f5b800" />}>
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        className="pt-16 pb-12 px-6 rounded-b-[40px] shadow-2xl"
+      >
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-slate-400 text-sm font-medium uppercase tracking-widest">Gardiennage</Text>
+            <Text className="text-white font-black text-3xl mt-1">Mes Sites</Text>
+          </View>
+          <View className="w-14 h-14 bg-white/10 rounded-2xl items-center justify-center border border-white/5">
+            <Building2 size={24} color="#f5b800" />
+          </View>
+        </View>
+      </LinearGradient>
+
+      <View className="px-4 -mt-6 pb-4">
+        <Text className="text-slate-500 text-sm">Agents assignés et statut en poste</Text>
       </View>
 
       {sites.map((site) => (
