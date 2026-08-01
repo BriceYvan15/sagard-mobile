@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   Clock, MapPin, User, Footprints, AlertTriangle,
-  ShieldCheck, LayoutDashboard, Grid2x2, FileText, Wrench, Building2
+  ShieldCheck, LayoutDashboard, Grid2x2, FileText, Wrench, Building2, GraduationCap
 } from 'lucide-react-native'
 import { useAuth } from '../../lib/auth-context'
 import { View, ActivityIndicator } from 'react-native'
@@ -77,6 +77,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="mes-sites" options={{ href: null }} />
         <Tabs.Screen name="factures" options={{ href: null }} />
         <Tabs.Screen name="interventions" options={{ href: null }} />
+        <Tabs.Screen name="formations" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
     )
@@ -121,6 +122,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="controles" options={{ href: null }} />
         <Tabs.Screen name="incidents" options={{ href: null }} />
         <Tabs.Screen name="interventions" options={{ href: null }} />
+        <Tabs.Screen name="formations" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
     )
@@ -165,6 +167,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="incidents" options={{ href: null }} />
         <Tabs.Screen name="mes-sites" options={{ href: null }} />
         <Tabs.Screen name="factures" options={{ href: null }} />
+        <Tabs.Screen name="formations" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
     )
@@ -199,6 +202,13 @@ export default function TabsLayout() {
         options={{
           title: 'Affectations',
           tabBarIcon: ({ color }) => <MapPin size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="formations"
+        options={{
+          title: 'Formations',
+          tabBarIcon: ({ color }) => <GraduationCap size={22} color={color} />,
         }}
       />
       <Tabs.Screen
