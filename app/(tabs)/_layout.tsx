@@ -74,6 +74,9 @@ export default function TabsLayout() {
         <Tabs.Screen name="rapport" options={{ href: null }} />
         <Tabs.Screen name="operations" options={{ href: null }} />
         <Tabs.Screen name="notifications" options={{ href: null }} />
+        <Tabs.Screen name="mes-sites" options={{ href: null }} />
+        <Tabs.Screen name="factures" options={{ href: null }} />
+        <Tabs.Screen name="interventions" options={{ href: null }} />
         <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
     )
@@ -215,6 +218,9 @@ export default function TabsLayout() {
       {/* Hidden controller routes */}
       <Tabs.Screen name="supervision" options={{ href: null }} />
       <Tabs.Screen name="controles" options={{ href: null }} />
+      <Tabs.Screen name="mes-sites" options={{ href: null }} />
+      <Tabs.Screen name="factures" options={{ href: null }} />
+      <Tabs.Screen name="interventions" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
   )
