@@ -123,7 +123,7 @@ export default function ProfilScreen() {
       loadLeaves()
     } catch (e: any) {
       const errData = e?.response?.data
-      const errMsg = typeof errData === 'object' ? JSON.stringify(errData) : errData?.message ?? 'Impossible de soumettre la demande'
+      const errMsg = errData?.message ?? 'Impossible de soumettre la demande'
       Alert.alert('Erreur', errMsg)
     } finally {
       setLeaveLoading(false)
