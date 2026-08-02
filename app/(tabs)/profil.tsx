@@ -39,7 +39,7 @@ export default function ProfilScreen() {
   const [leaveReason, setLeaveReason] = useState('')
   const [leaveLoading, setLeaveLoading] = useState(false)
 
-  const formatDate = (d: Date) => d.toISOString().split('T')[0]
+  const formatDate = (d: Date) => d.toISOString()
   const computedDays = Math.max(1, Math.ceil((leaveEnd.getTime() - leaveStart.getTime()) / 86400000) + 1)
 
   useEffect(() => {
