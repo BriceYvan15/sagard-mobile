@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 export default function ProfilScreen() {
-  const { user, logout, agentId } = useAuth()
+  const { user, logout, agentId, isAgent, isController, isClient, isTechnician } = useAuth()
   const router = useRouter()
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
@@ -202,13 +202,15 @@ export default function ProfilScreen() {
           <InfoItem icon={BadgeCheck} label="Statut du compte" value={user?.status} last />
         </View>
 
-        <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-4 ml-2">Sécurité & Congés</Text>
+        <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-4 ml-2">Sécurité{isAgent ? ' & Congés' : ''}</Text>
 
         <ActionItem icon={Lock} label="Changer le mot de passe" onPress={() => setShowPasswordModal(true)} />
-        <ActionItem icon={Calendar} label="Mes congés" onPress={() => setShowLeaveModal(true)} />
+        {isAgent && (
+          <ActionItem icon={Calendar} label="Mes congés" onPress={() => setShowLeaveModal(true)} />
+        )}
 
         {/* Leaves summary */}
-        {leaves.length > 0 && (
+        {isAgent && leaves.length > 0 && (
           <View className="bg-white rounded-[24px] p-5 mb-3 shadow-sm border border-slate-100">
             <Text className="text-slate-400 text-xs font-bold uppercase mb-3">Dernières demandes</Text>
             {leaves.slice(0, 3).map((l: any) => (
@@ -230,7 +232,7 @@ export default function ProfilScreen() {
         <Text className="text-slate-400 text-xs font-black uppercase tracking-[2px] mb-4 ml-2 mt-4">Préférences</Text>
 
         <ActionItem icon={Bell} label="Notifications" onPress={() => {}} />
-        <ActionItem icon={Settings} label="Paramètres" onPress={() => {}} />
+        <ActionItem icon={Settings} label="Paramètres" onPress={() => router.push('/settings')} />
         <ActionItem icon={HelpCircle} label="Centre d'aide" onPress={() => {}} />
         <ActionItem icon={LogOut} label="Se déconnecter" onPress={handleLogout} variant="danger" />
 
