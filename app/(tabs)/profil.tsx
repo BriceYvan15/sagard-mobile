@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TextInput, ActivityIndicator, Platform } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TextInput, ActivityIndicator } from 'react-native'
 import { User, Mail, Phone, Shield, LogOut, ChevronRight, BadgeCheck, Settings, Bell, HelpCircle, Lock, Calendar, X } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import DateTimePicker from '@react-native-community/datetimepicker'
+import DatePickerInput from '../../components/DatePickerInput'
 import { useAuth } from '../../lib/auth-context'
 import { changePassword, getLeaves, requestLeave } from '../../services/hr.service'
 
@@ -36,8 +36,6 @@ export default function ProfilScreen() {
   const [leaveType, setLeaveType] = useState('CONGE_ANNUEL')
   const [leaveStart, setLeaveStart] = useState(new Date())
   const [leaveEnd, setLeaveEnd] = useState(new Date())
-  const [showStartPicker, setShowStartPicker] = useState(false)
-  const [showEndPicker, setShowEndPicker] = useState(false)
   const [leaveReason, setLeaveReason] = useState('')
   const [leaveLoading, setLeaveLoading] = useState(false)
 
@@ -349,54 +347,22 @@ export default function ProfilScreen() {
                 ))}
               </View>
 
-              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date début</Text>
-              <TouchableOpacity
-                onPress={() => setShowStartPicker(true)}
-                className="bg-slate-50 rounded-2xl px-4 py-4 mb-4 border border-slate-100 flex-row items-center justify-between"
-              >
-                <Text className="text-slate-900 font-medium">
-                  {leaveStart.toLocaleDateString('fr-FR')}
-                </Text>
-                <Calendar size={18} color="#94a3b8" />
-              </TouchableOpacity>
-              {showStartPicker && (
-                <DateTimePicker
-                  value={leaveStart}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(e, d) => {
-                    setShowStartPicker(false)
-                    if (d) {
-                      setLeaveStart(d)
-                      if (d > leaveEnd) setLeaveEnd(d)
-                    }
-                  }}
-                  minimumDate={new Date()}
-                />
-              )}
+              <DatePickerInput
+                label="Date début"
+                value={leaveStart}
+                onChange={(d) => {
+                  setLeaveStart(d)
+                  if (d > leaveEnd) setLeaveEnd(d)
+                }}
+                minimumDate={new Date()}
+              />
 
-              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date fin</Text>
-              <TouchableOpacity
-                onPress={() => setShowEndPicker(true)}
-                className="bg-slate-50 rounded-2xl px-4 py-4 mb-4 border border-slate-100 flex-row items-center justify-between"
-              >
-                <Text className="text-slate-900 font-medium">
-                  {leaveEnd.toLocaleDateString('fr-FR')}
-                </Text>
-                <Calendar size={18} color="#94a3b8" />
-              </TouchableOpacity>
-              {showEndPicker && (
-                <DateTimePicker
-                  value={leaveEnd}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(e, d) => {
-                    setShowEndPicker(false)
-                    if (d) setLeaveEnd(d)
-                  }}
-                  minimumDate={leaveStart}
-                />
-              )}
+              <DatePickerInput
+                label="Date fin"
+                value={leaveEnd}
+                onChange={setLeaveEnd}
+                minimumDate={leaveStart}
+              />
 
               <View className="bg-sagard-yellow/5 rounded-2xl px-4 py-3 mb-4 border border-sagard-yellow/20">
                 <Text className="text-slate-600 text-xs font-bold uppercase">Durée: {computedDays} jour(s)</Text>
