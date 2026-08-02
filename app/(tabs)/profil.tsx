@@ -336,13 +336,13 @@ export default function ProfilScreen() {
 
               <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Type</Text>
               <View className="flex-row flex-wrap gap-2 mb-4">
-                {['CONGE_ANNUEL', 'MALADIE', 'FAMILIAL', 'SANS_SOLDE'].map(t => (
+                {['CONGE_ANNUEL', 'MALADIE', 'MATERNITE', 'PATERNITE', 'SANS_SOLDE'].map(t => (
                   <TouchableOpacity
                     key={t}
                     onPress={() => setLeaveType(t)}
                     className={`px-4 py-2.5 rounded-2xl border-2 ${leaveType === t ? 'border-sagard-yellow bg-sagard-yellow/5' : 'border-slate-100'}`}
                   >
-                    <Text className={`font-bold text-xs ${leaveType === t ? 'text-sagard-dark' : 'text-slate-400'}`}>{t.replace('_', ' ')}</Text>
+                    <Text className={`font-bold text-xs ${leaveType === t ? 'text-sagard-dark' : 'text-slate-400'}`}>{t === 'CONGE_ANNUEL' ? 'Congé annuel' : t === 'SANS_SOLDE' ? 'Sans solde' : t.charAt(0) + t.slice(1).toLowerCase()}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
