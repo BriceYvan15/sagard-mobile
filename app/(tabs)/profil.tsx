@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TextInput, ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Modal, TextInput, ActivityIndicator, Platform } from 'react-native'
 import { User, Mail, Phone, Shield, LogOut, ChevronRight, BadgeCheck, Settings, Bell, HelpCircle, Lock, Calendar, X } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
+import DateTimePicker from '@react-native-community/datetimepicker'
 import { useAuth } from '../../lib/auth-context'
 import { changePassword, getLeaves, requestLeave } from '../../services/hr.service'
 
@@ -33,11 +34,15 @@ export default function ProfilScreen() {
 
   // Leave form
   const [leaveType, setLeaveType] = useState('CONGE_ANNUEL')
-  const [leaveStart, setLeaveStart] = useState('')
-  const [leaveEnd, setLeaveEnd] = useState('')
-  const [leaveDays, setLeaveDays] = useState('1')
+  const [leaveStart, setLeaveStart] = useState(new Date())
+  const [leaveEnd, setLeaveEnd] = useState(new Date())
+  const [showStartPicker, setShowStartPicker] = useState(false)
+  const [showEndPicker, setShowEndPicker] = useState(false)
   const [leaveReason, setLeaveReason] = useState('')
   const [leaveLoading, setLeaveLoading] = useState(false)
+
+  const formatDate = (d: Date) => d.toISOString().split('T')[0]
+  const computedDays = Math.max(1, Math.ceil((leaveEnd.getTime() - leaveStart.getTime()) / 86400000) + 1)
 
   useEffect(() => {
     if (agentId) loadLeaves()
@@ -96,8 +101,12 @@ export default function ProfilScreen() {
   }
 
   const handleRequestLeave = async () => {
-    if (!agentId || !leaveStart || !leaveEnd) {
-      Alert.alert('Erreur', 'Dates de début et fin requises')
+    if (!agentId) {
+      Alert.alert('Erreur', 'Agent introuvable')
+      return
+    }
+    if (leaveEnd < leaveStart) {
+      Alert.alert('Erreur', 'La date de fin doit être après la date de début')
       return
     }
     setLeaveLoading(true)
@@ -105,16 +114,13 @@ export default function ProfilScreen() {
       await requestLeave({
         agentId,
         type: leaveType,
-        startDate: leaveStart,
-        endDate: leaveEnd,
-        days: Number(leaveDays) || 1,
+        startDate: formatDate(leaveStart),
+        endDate: formatDate(leaveEnd),
+        days: computedDays,
         reason: leaveReason || undefined,
       })
       Alert.alert('Succès', 'Demande de congé soumise')
       setShowLeaveModal(false)
-      setLeaveStart('')
-      setLeaveEnd('')
-      setLeaveDays('1')
       setLeaveReason('')
       loadLeaves()
     } catch (e: any) {
@@ -343,30 +349,58 @@ export default function ProfilScreen() {
                 ))}
               </View>
 
-              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date début (YYYY-MM-DD)</Text>
-              <TextInput
-                value={leaveStart}
-                onChangeText={setLeaveStart}
-                placeholder="2026-07-01"
-                className="bg-slate-50 rounded-2xl px-4 py-4 text-slate-900 font-medium mb-4 border border-slate-100"
-              />
+              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date début</Text>
+              <TouchableOpacity
+                onPress={() => setShowStartPicker(true)}
+                className="bg-slate-50 rounded-2xl px-4 py-4 mb-4 border border-slate-100 flex-row items-center justify-between"
+              >
+                <Text className="text-slate-900 font-medium">
+                  {leaveStart.toLocaleDateString('fr-FR')}
+                </Text>
+                <Calendar size={18} color="#94a3b8" />
+              </TouchableOpacity>
+              {showStartPicker && (
+                <DateTimePicker
+                  value={leaveStart}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(e, d) => {
+                    setShowStartPicker(false)
+                    if (d) {
+                      setLeaveStart(d)
+                      if (d > leaveEnd) setLeaveEnd(d)
+                    }
+                  }}
+                  minimumDate={new Date()}
+                />
+              )}
 
-              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date fin (YYYY-MM-DD)</Text>
-              <TextInput
-                value={leaveEnd}
-                onChangeText={setLeaveEnd}
-                placeholder="2026-07-05"
-                className="bg-slate-50 rounded-2xl px-4 py-4 text-slate-900 font-medium mb-4 border border-slate-100"
-              />
+              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Date fin</Text>
+              <TouchableOpacity
+                onPress={() => setShowEndPicker(true)}
+                className="bg-slate-50 rounded-2xl px-4 py-4 mb-4 border border-slate-100 flex-row items-center justify-between"
+              >
+                <Text className="text-slate-900 font-medium">
+                  {leaveEnd.toLocaleDateString('fr-FR')}
+                </Text>
+                <Calendar size={18} color="#94a3b8" />
+              </TouchableOpacity>
+              {showEndPicker && (
+                <DateTimePicker
+                  value={leaveEnd}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(e, d) => {
+                    setShowEndPicker(false)
+                    if (d) setLeaveEnd(d)
+                  }}
+                  minimumDate={leaveStart}
+                />
+              )}
 
-              <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Nombre de jours</Text>
-              <TextInput
-                value={leaveDays}
-                onChangeText={setLeaveDays}
-                keyboardType="numeric"
-                placeholder="5"
-                className="bg-slate-50 rounded-2xl px-4 py-4 text-slate-900 font-medium mb-4 border border-slate-100"
-              />
+              <View className="bg-sagard-yellow/5 rounded-2xl px-4 py-3 mb-4 border border-sagard-yellow/20">
+                <Text className="text-slate-600 text-xs font-bold uppercase">Durée: {computedDays} jour(s)</Text>
+              </View>
 
               <Text className="text-slate-400 text-xs font-bold uppercase mb-2">Motif (optionnel)</Text>
               <TextInput
