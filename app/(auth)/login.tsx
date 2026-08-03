@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { View, Text, TextInput, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, ActivityIndicator, Image, Animated, Easing } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import LottieView from 'lottie-react-native'
-import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react-native'
+import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, Check } from 'lucide-react-native'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth-context'
+import * as SecureStore from 'expo-secure-store'
 
 export default function LoginScreen() {
   const { login } = useAuth()
@@ -15,9 +16,25 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isFocused, setIsFocused] = useState<'email' | 'password' | null>(null)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const fadeAnim = useRef(new Animated.Value(0)).current
   const slideAnim = useRef(new Animated.Value(30)).current
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const saved = await SecureStore.getItemAsync('sagard_credentials')
+        if (saved) {
+          const { email: savedEmail, password: savedPassword } = JSON.parse(saved)
+          setEmail(savedEmail || '')
+          setPassword(savedPassword || '')
+          setRememberMe(true)
+        }
+      } catch {}
+    })()
+  }, [])
 
   useEffect(() => {
     Animated.parallel([
@@ -45,6 +62,11 @@ export default function LoginScreen() {
     setLoading(true)
     try {
       await login(email, password)
+      if (rememberMe) {
+        await SecureStore.setItemAsync('sagard_credentials', JSON.stringify({ email, password }))
+      } else {
+        await SecureStore.deleteItemAsync('sagard_credentials')
+      }
       router.replace('/')
     } catch (e: any) {
       const rawMsg = e.response?.data?.message ?? e?.message ?? 'Identifiants invalides'
@@ -213,6 +235,29 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Remember me */}
+              <TouchableOpacity
+                onPress={() => setRememberMe(!rememberMe)}
+                className="flex-row items-center gap-2.5 mb-5"
+                activeOpacity={0.7}
+              >
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 6,
+                    borderWidth: 2,
+                    borderColor: rememberMe ? '#f5b800' : 'rgba(255,255,255,0.2)',
+                    backgroundColor: rememberMe ? '#f5b800' : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {rememberMe && <Check size={14} color="#0f172a" strokeWidth={3} />}
+                </View>
+                <Text className="text-slate-300 text-[13px] font-medium">Se souvenir de moi</Text>
+              </TouchableOpacity>
 
               {/* Error */}
               {error && (
